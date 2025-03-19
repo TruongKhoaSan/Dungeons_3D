@@ -15,24 +15,26 @@ public class Player : MonoBehaviour
         animator = GetComponentInChildren<Animator>();
     }
 
-    void Update()
+    void FixedUpdate() // Sử dụng FixedUpdate để xử lý vật lý
     {
         float currentYVelocity = rb.velocity.y;
 
         Vector3 moveDirection = new Vector3(joystick.Horizontal, 0, joystick.Vertical).normalized;
 
-        rb.velocity = new Vector3(moveDirection.x * speed, currentYVelocity, moveDirection.z * speed);
-
-        if (moveDirection != Vector3.zero)
+        if (moveDirection.magnitude > 0.1f) // Kiểm tra có di chuyển không
         {
-            transform.rotation = Quaternion.LookRotation(new Vector3(moveDirection.x, 0, moveDirection.z));
-            
-            animator.SetBool("isWalking", true); 
+            rb.velocity = new Vector3(moveDirection.x * speed, currentYVelocity, moveDirection.z * speed);
+
+            // Quay mặt từ từ về hướng di chuyển
+            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.fixedDeltaTime * 10f);
+
+            animator.SetBool("isWalking", true);
         }
         else
         {
-            animator.SetBool("isWalking", false); 
+            rb.velocity = new Vector3(0, currentYVelocity, 0); // Dừng di chuyển
+            animator.SetBool("isWalking", false);
         }
     }
-
 }
